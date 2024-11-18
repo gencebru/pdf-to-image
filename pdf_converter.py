@@ -13,6 +13,6 @@ def pdf_to_images(pdf_path, output_path):
         print(f"{output_filename} kaydedildi.")
 
 
-pdf_path = "input/book_1.pdf"  
+pdf_path = "input/deneme.pdf"  
 output_path = "output/output_jpg"  
 pdf_to_images(pdf_path, output_path)
