@@ -6,7 +6,7 @@ def ocr_images(input_path, output_path):
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    config = '--oem 3 --psm 3 -l kor' #korece dil seçeneği
+    config = '--oem 3 --psm 3 -l tur + eng' #korece dil seçeneği
 
     for filename in os.listdir(input_path):
         if filename.endswith(".jpg"):
@@ -23,6 +23,6 @@ def ocr_images(input_path, output_path):
             
             print(f"{output_file_path} kaydedildi.")
 
-input_path = "output"  # JPG dosyalarının olduğu klasör
+input_path = "output/output_jpg"  # JPG dosyalarının olduğu klasör
 output_path = "output/output_text/"  # OCR çıktı dosyalarının kaydedileceği klasör
 ocr_images(input_path, output_path)
