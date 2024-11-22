@@ -6,7 +6,7 @@ def ocr_images(input_path, output_path):
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    config = '--oem 3 --psm 3 -l tur + eng' #korece dil seçeneği
+    config = '--oem 3 --psm 3 -l tur + eng' #dil seçeneği
 
     for filename in os.listdir(input_path):
         if filename.endswith(".jpg"):
