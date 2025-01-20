@@ -9,7 +9,7 @@ from googletrans import Translator
 from PyPDF2 import PdfReader, PdfWriter
 from pdf2image import convert_from_path
 from PIL import Image, ImageDraw, ImageFont
-
+import time  # for updtate_idletask
 
 def translate_pdf(input_pdf_path, output_pdf_path, progress_callback):
     translator = Translator()
@@ -35,8 +35,9 @@ def translate_pdf(input_pdf_path, output_pdf_path, progress_callback):
                 # Annotate image with translated text
                 draw = ImageDraw.Draw(img)
                 font = ImageFont.load_default()
-                text_position = (10, 10)  # Example position for translated text
+                text_position = (10, 10)  #
                 draw.text(text_position, translated_text, fill=(0, 0, 0), font=font)
+
 
             # Save annotated image as PDF page
             annotated_image_path = os.path.join(temp_dir, f"translated_page_{page_index}.pdf")
@@ -60,6 +61,7 @@ def translate_pdf(input_pdf_path, output_pdf_path, progress_callback):
 def update_progress(value):
     progress_bar['value'] = value
     root.update_idletasks()
+    time.sleep(0.01)
 
 
 def select_pdf():
@@ -92,6 +94,8 @@ def process_pdf():
 
     try:
         progress_bar['value'] = 0  # Reset progress bar before processing
+        #progress_bar.pack()  # pack??
+
         translate_pdf(input_path, output_path, update_progress)
         messagebox.showinfo("Success", "PDF translation completed successfully.")
     except Exception as e:
@@ -115,7 +119,10 @@ Button(root, text="Browse", command=save_pdf).grid(row=1, column=2, padx=10, pad
 Button(root, text="Translate PDF", command=process_pdf).grid(row=2, column=0, columnspan=3, pady=20)
 
 # Progress Bar
+
 progress_bar = ttk.Progressbar(root, length=300, mode='determinate', maximum=100)
+#progress_bar = ttk.Progressbar(root, orient="horizontal", length=300, mode='determinate',takefocus=True, maximum=100)
+
 progress_bar.grid(row=3, column=0, columnspan=3, padx=10, pady=10)
 
 root.mainloop()
