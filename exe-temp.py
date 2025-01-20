@@ -7,7 +7,7 @@ from tkinter import messagebox
 from googletrans import Translator
 from PyPDF2 import PdfReader, PdfWriter
 from pdf2image import convert_from_path
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 def translate_pdf(input_pdf_path, output_pdf_path):
     translator = Translator()
@@ -26,6 +26,8 @@ def translate_pdf(input_pdf_path, output_pdf_path):
 
             # Handle images with OCR
             images = convert_from_path(input_pdf_path, first_page=page_index + 1, last_page=page_index + 1)
+            page_image_path = None
+
             if images:
                 for img in images:
                     img_path = os.path.join(temp_dir, f"temp_page_{page_index}.png")
@@ -35,11 +37,20 @@ def translate_pdf(input_pdf_path, output_pdf_path):
                     if ocr_text.strip():
                         translated_text += "\n" + translator.translate(ocr_text, src='auto', dest='tr').text
 
-            # Create the translated page
-            page_data = translated_text.encode("utf-8")
-            new_page = writer.add_blank_page(width=page.mediabox.width, height=page.mediabox.height)
-            new_page.merge_page(page)
-            writer.add_text(page_data, x=20, y=20)
+                    # Annotate the image with translated text
+                    draw = ImageDraw.Draw(img)
+                    font = ImageFont.load_default()
+                    text_position = (10, 10)  # Example position for translated text
+                    draw.text(text_position, translated_text, fill=(0, 0, 0), font=font)
+                    page_image_path = os.path.join(temp_dir, f"translated_page_{page_index}.png")
+                    img.save(page_image_path, "PNG")
+
+            # Add the original or translated content back to the PDF
+            if page_image_path:
+                with open(page_image_path, "rb") as img_file:
+                    writer.add_image(page.mediabox, img_file.read())
+            else:
+                writer.add_page(page)
 
         # Save the translated PDF
         with open(output_pdf_path, "wb") as output_pdf:
