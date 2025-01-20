@@ -4,12 +4,14 @@ import shutil
 import pytesseract
 from tkinter import Tk, filedialog, Button, Label
 from tkinter import messagebox
+from tkinter import ttk
 from googletrans import Translator
 from PyPDF2 import PdfReader, PdfWriter
 from pdf2image import convert_from_path
 from PIL import Image, ImageDraw, ImageFont
 
-def translate_pdf(input_pdf_path, output_pdf_path):
+
+def translate_pdf(input_pdf_path, output_pdf_path, progress_callback):
     translator = Translator()
     temp_dir = tempfile.mkdtemp()
 
@@ -17,6 +19,7 @@ def translate_pdf(input_pdf_path, output_pdf_path):
         images = convert_from_path(input_pdf_path)
         writer = PdfWriter()
 
+        total_pages = len(images)
         for page_index, img in enumerate(images):
             # Save image temporarily
             img_path = os.path.join(temp_dir, f"temp_page_{page_index}.png")
@@ -43,12 +46,20 @@ def translate_pdf(input_pdf_path, output_pdf_path):
             with open(annotated_image_path, "rb") as f:
                 writer.add_page(PdfReader(f).pages[0])
 
+            # Update progress bar
+            progress_callback((page_index + 1) / total_pages * 100)
+
         # Write final PDF
         with open(output_pdf_path, "wb") as output_pdf:
             writer.write(output_pdf)
 
     finally:
         shutil.rmtree(temp_dir)
+
+
+def update_progress(value):
+    progress_bar['value'] = value
+    root.update_idletasks()
 
 
 def select_pdf():
@@ -80,7 +91,8 @@ def process_pdf():
         return
 
     try:
-        translate_pdf(input_path, output_path)
+        progress_bar['value'] = 0  # Reset progress bar before processing
+        translate_pdf(input_path, output_path, update_progress)
         messagebox.showinfo("Success", "PDF translation completed successfully.")
     except Exception as e:
         messagebox.showerror("Error", f"An error occurred: {e}")
@@ -101,5 +113,9 @@ output_label.grid(row=1, column=1, padx=10, pady=10)
 Button(root, text="Browse", command=save_pdf).grid(row=1, column=2, padx=10, pady=10)
 
 Button(root, text="Translate PDF", command=process_pdf).grid(row=2, column=0, columnspan=3, pady=20)
+
+# Progress Bar
+progress_bar = ttk.Progressbar(root, length=300, mode='determinate', maximum=100)
+progress_bar.grid(row=3, column=0, columnspan=3, padx=10, pady=10)
 
 root.mainloop()
