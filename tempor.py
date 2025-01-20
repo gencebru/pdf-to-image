@@ -30,7 +30,11 @@ def translate_pdf(input_pdf_path, output_pdf_path, progress_callback):
             translated_text = ""
 
             if ocr_text.strip():
-                translated_text = translator.translate(ocr_text, src='auto', dest='tr').text
+                try:
+                    translated_text = translator.translate(ocr_text, src='auto', dest='tr').text
+                except Exception as e:
+                    print(f"translation err: {e}")
+                    translated_text ="[translation failed]"
 
                 # Annotate image with translated text
                 draw = ImageDraw.Draw(img)
@@ -38,7 +42,8 @@ def translate_pdf(input_pdf_path, output_pdf_path, progress_callback):
                 text_position = (10, 10)  #
                 draw.text(text_position, translated_text, fill=(0, 0, 0), font=font)
 
-
+            else:
+                print("ocr output empty, skipping this page")
             # Save annotated image as PDF page
             annotated_image_path = os.path.join(temp_dir, f"translated_page_{page_index}.pdf")
             img.save(annotated_image_path, "PDF")
@@ -49,6 +54,7 @@ def translate_pdf(input_pdf_path, output_pdf_path, progress_callback):
 
             # Update progress bar
             progress_callback((page_index + 1) / total_pages * 100)
+            time.sleep(0.1)
 
         # Write final PDF
         with open(output_pdf_path, "wb") as output_pdf:
@@ -60,8 +66,8 @@ def translate_pdf(input_pdf_path, output_pdf_path, progress_callback):
 
 def update_progress(value):
     progress_bar['value'] = value
-    root.update_idletasks()
-    time.sleep(0.01)
+    root.update_idletasks()  # upd kullanılabilir mi???
+    #time.sleep(0.15)
 
 
 def select_pdf():
