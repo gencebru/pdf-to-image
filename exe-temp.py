@@ -26,7 +26,7 @@ def translate_pdf(input_pdf_path, output_pdf_path):
 
             # Handle images with OCR
             images = convert_from_path(input_pdf_path, first_page=page_index + 1, last_page=page_index + 1)
-            page_image_path = None
+            annotated_image_path = None
 
             if images:
                 for img in images:
@@ -42,13 +42,16 @@ def translate_pdf(input_pdf_path, output_pdf_path):
                     font = ImageFont.load_default()
                     text_position = (10, 10)  # Example position for translated text
                     draw.text(text_position, translated_text, fill=(0, 0, 0), font=font)
-                    page_image_path = os.path.join(temp_dir, f"translated_page_{page_index}.png")
-                    img.save(page_image_path, "PNG")
+                    annotated_image_path = os.path.join(temp_dir, f"translated_page_{page_index}.png")
+                    img.save(annotated_image_path, "PNG")
 
-            # Add the original or translated content back to the PDF
-            if page_image_path:
-                with open(page_image_path, "rb") as img_file:
-                    writer.add_image(page.mediabox, img_file.read())
+            # Create a new page with the annotated image or the original content
+            if annotated_image_path:
+                with open(annotated_image_path, "rb") as img_file:
+                    img_content = img_file.read()
+                    img_page = writer.add_blank_page(width=page.mediabox.width, height=page.mediabox.height)
+                    img_page.merge_page(page)
+                    img_page["/Resources"]["/XObject"] = {"/Im0": img_content}
             else:
                 writer.add_page(page)
 
