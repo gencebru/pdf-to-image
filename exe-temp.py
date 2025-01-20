@@ -14,49 +14,36 @@ def translate_pdf(input_pdf_path, output_pdf_path):
     temp_dir = tempfile.mkdtemp()
 
     try:
-        reader = PdfReader(input_pdf_path)
+        images = convert_from_path(input_pdf_path)
         writer = PdfWriter()
 
-        for page_index, page in enumerate(reader.pages):
-            # Extract text if machine-readable
-            text = page.extract_text()
+        for page_index, img in enumerate(images):
+            # Save image temporarily
+            img_path = os.path.join(temp_dir, f"temp_page_{page_index}.png")
+            img.save(img_path, "PNG")
+
+            # OCR processing
+            ocr_text = pytesseract.image_to_string(img, lang='eng')
             translated_text = ""
-            if text:
-                translated_text = translator.translate(text, src='auto', dest='tr').text
 
-            # Handle images with OCR
-            images = convert_from_path(input_pdf_path, first_page=page_index + 1, last_page=page_index + 1)
-            annotated_image_path = None
+            if ocr_text.strip():
+                translated_text = translator.translate(ocr_text, src='auto', dest='tr').text
 
-            if images:
-                for img in images:
-                    img_path = os.path.join(temp_dir, f"temp_page_{page_index}.png")
-                    img.save(img_path, "PNG")
+                # Annotate image with translated text
+                draw = ImageDraw.Draw(img)
+                font = ImageFont.load_default()
+                text_position = (10, 10)  # Example position for translated text
+                draw.text(text_position, translated_text, fill=(0, 0, 0), font=font)
 
-                    ocr_text = pytesseract.image_to_string(img, lang='eng')
-                    if ocr_text.strip():
-                        translated_text += "\n" + translator.translate(ocr_text, src='auto', dest='tr').text
+            # Save annotated image as PDF page
+            annotated_image_path = os.path.join(temp_dir, f"translated_page_{page_index}.pdf")
+            img.save(annotated_image_path, "PDF")
 
-                    # Annotate the image with translated text
-                    draw = ImageDraw.Draw(img)
-                    font = ImageFont.load_default()
-                    text_position = (10, 10)  # Example position for translated text
-                    draw.text(text_position, translated_text, fill=(0, 0, 0), font=font)
-                    annotated_image_path = os.path.join(temp_dir, f"translated_page_{page_index}.png")
-                    img.save(annotated_image_path, "PNG")
+            # Add the page to the writer
+            with open(annotated_image_path, "rb") as f:
+                writer.add_page(PdfReader(f).pages[0])
 
-            # Add original or annotated image as a new page in the PDF
-            if annotated_image_path:
-                img_pdf = convert_from_path(annotated_image_path, dpi=200)
-                for img_page in img_pdf:
-                    temp_img_path = os.path.join(temp_dir, f"temp_img_page_{page_index}.pdf")
-                    img_page.save(temp_img_path, "PDF")
-                    with open(temp_img_path, "rb") as f:
-                        writer.add_page(PdfReader(f).pages[0])
-            else:
-                writer.add_page(page)
-
-        # Save the translated PDF
+        # Write final PDF
         with open(output_pdf_path, "wb") as output_pdf:
             writer.write(output_pdf)
 
