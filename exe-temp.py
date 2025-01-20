@@ -45,13 +45,14 @@ def translate_pdf(input_pdf_path, output_pdf_path):
                     annotated_image_path = os.path.join(temp_dir, f"translated_page_{page_index}.png")
                     img.save(annotated_image_path, "PNG")
 
-            # Create a new page with the annotated image or the original content
+            # Add original or annotated image as a new page in the PDF
             if annotated_image_path:
-                with open(annotated_image_path, "rb") as img_file:
-                    img_content = img_file.read()
-                    img_page = writer.add_blank_page(width=page.mediabox.width, height=page.mediabox.height)
-                    img_page.merge_page(page)
-                    img_page["/Resources"]["/XObject"] = {"/Im0": img_content}
+                img_pdf = convert_from_path(annotated_image_path, dpi=200)
+                for img_page in img_pdf:
+                    temp_img_path = os.path.join(temp_dir, f"temp_img_page_{page_index}.pdf")
+                    img_page.save(temp_img_path, "PDF")
+                    with open(temp_img_path, "rb") as f:
+                        writer.add_page(PdfReader(f).pages[0])
             else:
                 writer.add_page(page)
 
