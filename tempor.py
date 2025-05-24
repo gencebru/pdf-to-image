@@ -49,6 +49,7 @@ def translate_pdf(input_pdf_path, output_pdf_path, progress_callback):
             img.save(annotated_image_path, "PDF")
 
             # Add the page to the writer
+            
             with open(annotated_image_path, "rb") as f:
                 writer.add_page(PdfReader(f).pages[0])
 

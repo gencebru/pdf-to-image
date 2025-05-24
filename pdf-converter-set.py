@@ -26,6 +26,6 @@ def pdf_to_images(input_dir, output_dir):
 
 
 input_dir = "input/scanned-pdf"
-output_dir = "/Users/ebrugenc/develop/Github/pdf-to-image/output/pdf"
+output_dir = ".../develop/Github/pdf-to-image/output/pdf"
 
 pdf_to_images(input_dir, output_dir)

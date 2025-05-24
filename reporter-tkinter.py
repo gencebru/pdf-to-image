@@ -28,7 +28,7 @@ def process_pdf_with_images(file_path, output_dir):
             try:
                 translated_text = translator.translate(text, src="auto", dest="tr").text
             except Exception as e:
-                print(f"Çeviri sırasında hata oluştu: {e}")
+                print(f"An error occured during translation: {e}")
                 translated_text = text  # Çeviri hatası durumunda orijinal metni bırak
 
             # Sayfayı düzenle ve metni ekle
@@ -50,7 +50,7 @@ def process_pdf_with_images(file_path, output_dir):
             try:
                 translated_text = translator.translate(ocr_text, src="auto", dest="tr").text
             except Exception as e:
-                print(f"OCR çeviri sırasında hata oluştu: {e}")
+                print(f"An error occurred during the ocr operation.: {e}")
                 translated_text = ocr_text
 
             # OCR ile metni ekle
@@ -74,20 +74,20 @@ def process_pdf_with_images(file_path, output_dir):
 
 # Kullanıcıdan giriş ve çıkış dosyalarını iste
 def main():
-    input_pdf = input("İşlenecek PDF dosyasının yolunu girin: ").strip()
+    input_pdf = input("pdf file path to process: ").strip()
     if not os.path.exists(input_pdf):
-        print("Hata: Dosya bulunamadı!")
+        print("Error: There is no such file")
         return
 
-    output_dir = input("Çıktı dosyalarının kaydedileceği klasörün yolunu girin: ").strip()
+    output_dir = input("where to save output file: ").strip()
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
     try:
         output_pdf = process_pdf_with_images(input_pdf, output_dir)
-        print(f"Çeviri tamamlandı. Çıktı PDF: {output_pdf}")
+        print(f"Translation completed. Output PDF: {output_pdf}")
     except Exception as e:
-        print(f"Bir hata oluştu: {e}")
+        print(f"Error: {e}")
 
 
 if __name__ == "__main__":
